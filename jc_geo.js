@@ -1,1 +1,0 @@
-return $server._geo && $server._entrance
