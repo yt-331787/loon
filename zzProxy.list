@@ -1,0 +1,7 @@
+#DOMAIN-KEYWORD	域名包含关键字	批量匹配相似域名	adobe → adobe.com
+#DOMAIN-SUFFIX	域名后缀完全匹配	精确匹配顶级域名或子域名	google.com → mail.google.com
+#DOMAIN	完整域名精确匹配	针对特定域名	www.bilibili.com
+
+DOMAIN-SUFFIX,google.com
+DOMAIN-SUFFIX,github.com
+DOMAIN-KEYWORD,aws
