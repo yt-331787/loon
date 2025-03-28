@@ -286,12 +286,12 @@ function operator(pro) {
       }
     }
 
-    // 添加 _subName 前缀
-    if (e._subName) {
-      e.name = `[${e._subName}]-${e.name}`;
+    // 添加 _subDisplayName 前缀
+    if (e._subDisplayName) {
+      e.name = `[${e._subDisplayName}]-${e.name}`;
     }
   });
-
+  
   pro = pro.filter((e) => e.name !== null);
   jxh(pro);
   numone && oneP(pro);
