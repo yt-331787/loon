@@ -43,8 +43,20 @@
  * 🎈Loon 可在插件中设置
  * 其他平台同理, 持久化缓存数据在 JSON 里
  */
-async function* operator(proxies = [], targetPlatform, context) {
+async function operator(proxies = [], targetPlatform, context) {
     const $ = $substore;
+    
+    // 确保 proxies 是一个数组
+    if (!Array.isArray(proxies)) {
+        if (proxies == null) {
+            proxies = [];
+        } else if (typeof proxies === 'object') {
+            proxies = [proxies];
+        } else {
+            throw new TypeError(`Expected proxies to be an array or object, but received ${typeof proxies}`);
+        }
+    }
+
     const cacheEnabled = $arguments.cache;
     const cache = scriptResourceCache;
     const disableFailedCache = $arguments.disable_failed_cache || $arguments.ignore_failed_error;
@@ -99,10 +111,7 @@ async function* operator(proxies = [], targetPlatform, context) {
 
     $.info(`核心支持节点数: ${internalProxies.length}/${proxies.length}`);
     if (!internalProxies.length) {
-        for (const proxy of proxies) {
-            yield proxy;
-        }
-        return;
+        return proxies;
     }
 
     // 缓存检查逻辑
@@ -134,10 +143,7 @@ async function* operator(proxies = [], targetPlatform, context) {
             }
             if (allCached) {
                 $.info('所有节点都有有效缓存 完成');
-                for (const proxy of proxies) {
-                    yield proxy;
-                }
-                return;
+                return proxies;
             }
         } catch (e) {
             // 忽略缓存错误
@@ -184,10 +190,7 @@ async function* operator(proxies = [], targetPlatform, context) {
     } catch (e) {
         $.error(`启动 HTTP META 失败: ${e.message || e}`);
         // 根据需要决定是否继续或中止脚本
-        for (const proxy of proxies) {
-            yield proxy;
-        }
-        return;
+        return proxies;
     }
 
     $.info(`等待 ${http_meta_start_delay / 1000} 秒后开始检测`);
@@ -241,10 +244,7 @@ async function* operator(proxies = [], targetPlatform, context) {
         });
     }
 
-    // 最终 yield 代理对象
-    for (const proxy of proxies) {
-        yield proxy;
-    }
+    return proxies;
 
     // 检测单个代理的函数
     async function check(proxy) {
@@ -370,7 +370,12 @@ async function* operator(proxies = [], targetPlatform, context) {
     // 格式化函数
     function formatter({ proxy = {}, api = {}, format = '' }) {
         let f = format.replace(/\{\{(.*?)\}\}/g, '${\$1}');
-        return eval(`\`${f}\``);
+        try {
+            return eval(`\`${f}\``);
+        } catch (e) {
+            $.error(`格式化字符串失败: ${e.message}`);
+            return proxy.name; // 返回原始名称
+        }
     }
 
     // 获取缓存 ID 的函数
